@@ -1,4 +1,3 @@
-from typing import Any
 from sqlalchemy import Integer, String, DateTime, JSON, Boolean, ForeignKey, BigInteger, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db import Base
