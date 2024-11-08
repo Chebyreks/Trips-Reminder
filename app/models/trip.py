@@ -9,8 +9,8 @@ class Trip(Base):
 
     id: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True, nullable=False)
     chat_id: Mapped[int] = mapped_column(BigInteger(), ForeignKey("user.chat_id"), nullable=False)
-    to_place: Mapped[dict[Any, Any]] = mapped_column(JSON(), nullable=False)
-    from_place: Mapped[dict[Any, Any]] = mapped_column(JSON(), nullable=False)
+    to_place: Mapped[dict[str, str]] = mapped_column(JSON(), nullable=False)
+    from_place: Mapped[dict[str, str]] = mapped_column(JSON(), nullable=False)
     to_place_title: Mapped[str] = mapped_column(String(150), nullable=False)
     from_place_title: Mapped[str] = mapped_column(String(150), nullable=False)
     transport_type: Mapped[TransportEnum] = mapped_column(String(150), nullable=False)

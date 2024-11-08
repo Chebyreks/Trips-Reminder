@@ -3,11 +3,15 @@ from datetime import datetime
 from typing import Any
 from app.models.transport_enum import TransportEnum
 
+class Coordinates(BaseModel):
+    latitude: str = Field(...)
+    longitude: str = Field(...)
+
 
 class TripBase(BaseModel):
     chat_id: int = Field(...)
-    to_place: dict[Any, Any] = Field(...)
-    from_place: dict[Any, Any]= Field(...)
+    to_place: Coordinates = Field(...)
+    from_place: Coordinates = Field(...)
     to_place_title: str = Field(..., min_length=3, max_length=128)
     from_place_title: str = Field(..., min_length=3, max_length=128)
     transport_type: TransportEnum = Field(...)
