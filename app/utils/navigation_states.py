@@ -3,7 +3,7 @@ from aiogram.types import Message
 
 from app.schemas.trip import TripRead
 from app.utils.state import MainMenu, PlanTrip, TripMenu
-from app.keyboards.reply import main_kb, rmk, trip_kb, confirm_kb
+from app.keyboards.reply import main_kb, rmk, trip_kb, confirm_kb, selection_field_for_change
 from app.keyboards.builders import reply_builder
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -50,6 +50,7 @@ async def to_selected_trip_bar(message: Message, state: FSMContext):
 
 async def to_modify_trip(message: Message, state: FSMContext):
     await state.set_state(TripMenu.modify_trip)
+    await message.answer("Select what you want to change", reply_markup=selection_field_for_change)
 
 async def to_delete_trip(message: Message, state: FSMContext):
     await state.set_state(TripMenu.delete_trip)

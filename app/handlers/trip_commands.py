@@ -10,7 +10,7 @@ from app.keyboards.reply import rmk, selection_notification_time
 from app.curd.trip import create_trip, update_trip_by_id, delete_trip_by_id
 from app.schemas.trip import TransportEnum, TripBase, TripRead, Coordinates
 
-from app.utils.state import PlanTrip, TripMenu, MainMenu
+from app.utils.state import PlanTrip, TripMenu, MainMenu, ChangeTrip
 from app.utils.navigation_states import to_menu_bar, to_modify_trip, to_delete_trip, to_mark_traveled, to_selected_trip_bar, \
     to_planned_trip_bar
 from app.utils.validation import check_validation_string, check_validation_travel_datetime, \
@@ -88,7 +88,7 @@ async def command_take_transport_type(message: Message, session: AsyncSession, s
 
 
 @router.message(MainMenu.planned_trips_bar)
-async def command_choose_trip(message: Message, session: AsyncSession, state: FSMContext):
+async def command_choose_trip(message: Message, state: FSMContext):
     state_data = await state.get_data()
     trips = state_data['trips']
     match message.text:
@@ -103,7 +103,7 @@ async def command_choose_trip(message: Message, session: AsyncSession, state: FS
 
 
 @router.message(TripMenu.selected_trip_bar)
-async def command_choose_action_with_trip(message: Message, session: AsyncSession, state: FSMContext):
+async def command_choose_action_with_trip(message: Message, state: FSMContext):
     match message.text:
         case 'Change trip':
             await to_modify_trip(message, state)
@@ -115,8 +115,37 @@ async def command_choose_action_with_trip(message: Message, session: AsyncSessio
             await to_menu_bar(message, state)
 
 @router.message(TripMenu.modify_trip)
-async def command_modify_trip(message: Message, session: AsyncSession, state: FSMContext):
-    pass
+async def command_modify_trip(message: Message, state: FSMContext):
+    match message.text:
+        case 'Return':
+            await to_selected_trip_bar(message, state)
+        case 'from_place_title':
+            await message.answer('Enter new from place title')
+            await state.set_state(ChangeTrip.from_place_title)
+        case 'to_place_title':
+            await message.answer('Enter new to place title')
+            await state.set_state(ChangeTrip.to_place_title)
+        case 'travel_date':
+            await message.answer('Enter new travel date and new time in format: "YYYY-MM-DD HH:MM:SS", without quotation marks',
+                                 reply_markup=rmk)
+            await state.set_state(ChangeTrip.travel_date)
+        case 'notification_before_travel':
+            await message.answer(
+                'Enter a new time for notification before travel if format: "days hours minutes seconds", '
+                'without quotation marks where you write numbers instead of words',
+                reply_markup=selection_notification_time)
+            await state.set_state(ChangeTrip.notification_before_travel)
+        case 'transport_type':
+            await message.answer(
+                "Choose new type of transport",
+                reply_markup=reply_builder(
+                    [TransportEnum(transport_type).name for transport_type in list(TransportEnum)])
+            )
+            await state.set_state(ChangeTrip.transport_type)
+        case _:
+            await message.answer('Print the button')
+
+
 
 @router.message(TripMenu.delete_trip)
 async def command_delete_trip(message: Message, session: AsyncSession, state: FSMContext):
