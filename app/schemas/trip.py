@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Any
 from app.models.transport_enum import TransportEnum
 
 class Coordinates(BaseModel):
