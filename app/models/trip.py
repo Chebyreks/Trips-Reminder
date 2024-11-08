@@ -2,14 +2,7 @@ from typing import Any
 from sqlalchemy import Integer, String, DateTime, JSON, Boolean, ForeignKey, BigInteger, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.db import Base
-from enum import Enum
-
-class TransportEnum(Enum):
-    subway = 1
-    bus = 2
-    car = 3
-    train = 4
-    plane = 5
+from app.models.transport_enum import TransportEnum
 
 class Trip(Base):
     __tablename__ = "trip"

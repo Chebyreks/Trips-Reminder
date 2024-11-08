@@ -1,15 +1,8 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 from typing import Any
-from enum import Enum
+from app.models.transport_enum import TransportEnum
 
-
-class TransportEnum(str, Enum):
-    subway = 1
-    bus = 2
-    car = 3
-    train = 4
-    plane = 5
 
 class TripBase(BaseModel):
     chat_id: int = Field(...)
