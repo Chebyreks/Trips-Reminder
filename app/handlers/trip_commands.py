@@ -2,7 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
-import datetime as dt
+
 
 from app.keyboards.builders import reply_builder
 from app.keyboards.reply import rmk, selection_notification_time
@@ -77,11 +77,7 @@ async def command_take_transport_type(message: Message, session: AsyncSession, s
         if created_trip is None:
             await message.answer("It is impossible to create trip")
         else:
-            # change data for to show the user
-            trip_data['transport_type'] = trip_data['transport_type'].name
-            trip_data['notification_before_travel'] = trip_data['notification_before_travel'] - dt.datetime.fromisoformat('1970-01-01')
-            text = '\n'.join([f'{key}: {value}' for key, value in trip_data.items()])
-            await message.answer(text)
+            await message.answer(TripRead.model_validate(created_trip).get_info())
             await message.answer("The trip was saved")
         await to_menu_bar(message, state)
 
@@ -170,7 +166,7 @@ async def command_mark_travelled(message: Message, session: AsyncSession, state:
             state_data = await state.get_data()
             trip = state_data['trip']
             trip = TripRead.model_validate(trip)
-            if (trip.isEnded):
+            if trip.isEnded:
                 trip.isEnded = False
                 await update_trip_by_id(trip.id, trip, session)
                 await message.answer("Trip unmarked as traveled")
@@ -189,6 +185,7 @@ async def save_change_trip(trip: TripBase, message: Message, session: AsyncSessi
     new_trip = await update_trip_by_id(trip.id, trip, session)
     if new_trip:
         await message.answer('Trip changed successfully')
+        await message.answer(TripRead.model_validate(new_trip).get_info())
     else:
         await message.answer("It is impossible to change trip")
     await to_menu_bar(message, state)
