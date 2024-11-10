@@ -60,11 +60,15 @@ confirm_kb = ReplyKeyboardMarkup(
 selection_field_for_change = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text='from_place_title'),
-            KeyboardButton(text='to_place_title'),
-            KeyboardButton(text='travel_date'),
-            KeyboardButton(text='notification_before_travel'),
-            KeyboardButton(text='transport_type'),
+            KeyboardButton(text='from place title'),
+            KeyboardButton(text='to place title')
+        ],
+        [
+            KeyboardButton(text='travel date'),
+            KeyboardButton(text='notification before travel'),
+        ],
+        [
+            KeyboardButton(text='transport type'),
             KeyboardButton(text='Return')
         ]
     ],

@@ -33,6 +33,7 @@ async def to_planned_trip_bar(message: Message, session: AsyncSession, state: FS
     trips = await get_trips_by_chat_id(message.from_user.id, session)
     trips = [TripRead.model_validate(trip) for trip in trips]
     await state.update_data(trips=trips)
+    trips.sort(key=lambda trip: trip.id)
     if len(trips):
         trips_to_print = str('\n' + 10*'-' + '\n').join([f"{i + 1}: " + str(trips[i]) for i in range(len(trips))])
         await message.answer(trips_to_print)

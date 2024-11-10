@@ -114,28 +114,29 @@ async def command_choose_action_with_trip(message: Message, state: FSMContext):
         case 'Return':
             await to_menu_bar(message, state)
 
+
 @router.message(TripMenu.modify_trip)
 async def command_modify_trip(message: Message, state: FSMContext):
     match message.text:
         case 'Return':
             await to_selected_trip_bar(message, state)
-        case 'from_place_title':
+        case 'from place title':
             await message.answer('Enter new from place title')
             await state.set_state(ChangeTrip.from_place_title)
-        case 'to_place_title':
+        case 'to place title':
             await message.answer('Enter new to place title')
             await state.set_state(ChangeTrip.to_place_title)
-        case 'travel_date':
+        case 'travel date':
             await message.answer('Enter new travel date and new time in format: "YYYY-MM-DD HH:MM:SS", without quotation marks',
                                  reply_markup=rmk)
             await state.set_state(ChangeTrip.travel_date)
-        case 'notification_before_travel':
+        case 'notification before travel':
             await message.answer(
                 'Enter a new time for notification before travel if format: "days hours minutes seconds", '
                 'without quotation marks where you write numbers instead of words',
                 reply_markup=selection_notification_time)
             await state.set_state(ChangeTrip.notification_before_travel)
-        case 'transport_type':
+        case 'transport type':
             await message.answer(
                 "Choose new type of transport",
                 reply_markup=reply_builder(
@@ -144,7 +145,6 @@ async def command_modify_trip(message: Message, state: FSMContext):
             await state.set_state(ChangeTrip.transport_type)
         case _:
             await message.answer('Print the button')
-
 
 
 @router.message(TripMenu.delete_trip)
@@ -161,6 +161,7 @@ async def command_delete_trip(message: Message, session: AsyncSession, state: FS
         case 'No':
             await message.answer("Deletion canceled")
             await to_selected_trip_bar(message, state)
+
 
 @router.message(TripMenu.mark_traveled)
 async def command_mark_travelled(message: Message, session: AsyncSession, state: FSMContext):
@@ -182,4 +183,58 @@ async def command_mark_travelled(message: Message, session: AsyncSession, state:
         case 'No':
             await message.answer("Marking canceled")
             await to_selected_trip_bar(message, state)
+
+
+async def save_change_trip(trip: TripBase, message: Message, session: AsyncSession, state: FSMContext):
+    new_trip = await update_trip_by_id(trip.id, trip, session)
+    if new_trip:
+        await message.answer('Trip changed successfully')
+    else:
+        await message.answer("It is impossible to change trip")
+    await to_menu_bar(message, state)
+
+@router.message(ChangeTrip.from_place_title)
+async def command_change_from_place_title(message: Message, session: AsyncSession, state: FSMContext):
+    if await check_validation_string(message.text, message):
+        state_data = await state.get_data()
+        trip = state_data['trip']
+        trip.from_place_title = message.text
+        await save_change_trip(trip,message, session, state)
+
+
+@router.message(ChangeTrip.to_place_title)
+async def command_change_to_place_title(message: Message, session: AsyncSession, state: FSMContext):
+    if await check_validation_string(message.text, message):
+        state_data = await state.get_data()
+        trip = state_data['trip']
+        trip.to_place_title = message.text
+        await save_change_trip(trip, message, session, state)
+
+
+@router.message(ChangeTrip.travel_date)
+async def command_change_travel_date(message: Message, session: AsyncSession, state: FSMContext):
+    datetime = await check_validation_travel_datetime(message.text, message)
+    if datetime:
+        state_data = await state.get_data()
+        trip = state_data['trip']
+        trip.travel_date = datetime
+        await save_change_trip(trip, message, session, state)
+
+@router.message(ChangeTrip.notification_before_travel)
+async def command_change_notification_before_travel(message: Message, session: AsyncSession, state: FSMContext):
+    datetime = await check_validation_string(message.text, message)
+    if datetime:
+        state_data = await state.get_data()
+        trip = state_data['trip']
+        trip.notification_before_travel = datetime
+        await save_change_trip(trip, message, session, state)
+
+
+@router.message(ChangeTrip.transport_type)
+async def command_change_transport_type(message: Message, session: AsyncSession, state: FSMContext):
+    if await check_validation_transport_type(message.text, message):
+        state_data = await state.get_data()
+        trip = state_data['trip']
+        trip.transport_type = TransportEnum(getattr(TransportEnum, message.text))
+        await save_change_trip(trip, message, session, state)
 
