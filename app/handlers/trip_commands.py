@@ -2,6 +2,7 @@ from aiogram import Router
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 from aiogram.fsm.context import FSMContext
+import datetime as dt
 
 
 from app.keyboards.builders import reply_builder
@@ -16,6 +17,8 @@ from app.utils.navigation_states import to_menu_bar, to_modify_trip, to_delete_t
 from app.utils.validation import check_validation_string, check_validation_travel_datetime, \
     check_validation_notification_time, check_validation_transport_type, check_validation_number_of_trip
 
+from celery_app.tasks import send_notification_trip, get_last_check_notification_time, left_border, right_border
+from celery_app.create_celery import interval_check
 
 router = Router(name="trip_commands_router")
 
@@ -77,7 +80,14 @@ async def command_take_transport_type(message: Message, session: AsyncSession, s
         if created_trip is None:
             await message.answer("It is impossible to create trip")
         else:
-            await message.answer(TripRead.model_validate(created_trip).get_info())
+            created_trip = TripRead.model_validate(created_trip)
+            notification_time = (created_trip.travel_date -
+                                 (created_trip.notification_before_travel - dt.datetime.fromisoformat('1970-01-01')))
+            last_check_time = get_last_check_notification_time()
+
+            if notification_time < (last_check_time + interval_check + left_border):
+                send_notification_trip.aplay_async(args=[created_trip], eta=notification_time)
+            await message.answer(created_trip.get_info())
             await message.answer("The trip was saved")
         await to_menu_bar(message, state)
 
