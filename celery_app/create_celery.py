@@ -5,7 +5,7 @@ import logging
 from celery.signals import after_setup_logger, beat_init
 
 from app.core.config import settings
-import celery_app.tasks
+
 from celery_app.tasks import check_notification_to_send
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,6 @@ tasks_celery.conf.update(
 )
 
 tasks_celery.autodiscover_tasks()
-
 
 @after_setup_logger.connect
 def setup_loggers(logger, *args, **kwargs):

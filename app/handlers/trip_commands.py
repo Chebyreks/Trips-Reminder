@@ -10,6 +10,7 @@ from app.keyboards.reply import rmk, selection_notification_time
 
 from app.curd.trip import create_trip, update_trip_by_id, delete_trip_by_id
 from app.schemas.trip import TransportEnum, TripBase, TripRead, Coordinates
+from app.utils.notifiaction import check_need_to_create_task_immediately, cancel_notification
 
 from app.utils.state import PlanTrip, TripMenu, MainMenu, ChangeTrip
 from app.utils.navigation_states import to_menu_bar, to_modify_trip, to_delete_trip, to_mark_traveled, to_selected_trip_bar, \
@@ -81,12 +82,7 @@ async def command_take_transport_type(message: Message, session: AsyncSession, s
             await message.answer("It is impossible to create trip")
         else:
             created_trip = TripRead.model_validate(created_trip)
-            notification_time = (created_trip.travel_date -
-                                 (created_trip.notification_before_travel - dt.datetime.fromisoformat('1970-01-01')))
-            last_check_time = get_last_check_notification_time()
-
-            if notification_time < (last_check_time + interval_check + left_border):
-                send_notification_trip.aplay_async(args=[created_trip], eta=notification_time)
+            check_need_to_create_task_immediately(created_trip)
             await message.answer(created_trip.get_info())
             await message.answer("The trip was saved")
         await to_menu_bar(message, state)
@@ -191,11 +187,22 @@ async def command_mark_travelled(message: Message, session: AsyncSession, state:
             await to_selected_trip_bar(message, state)
 
 
-async def save_change_trip(trip: TripBase, message: Message, session: AsyncSession, state: FSMContext):
+async def save_change_trip(trip: TripRead, message: Message, session: AsyncSession, state: FSMContext) -> TripRead | None:
     new_trip = await update_trip_by_id(trip.id, trip, session)
     if new_trip:
+        new_trip = TripRead.model_validate(new_trip)
+        old_notification_time = (trip.travel_date -
+                                 (trip.notification_before_travel - dt.datetime.fromisoformat('1970-01-01')))
+        new_notification_time = (new_trip.travel_date -
+                                 (new_trip.notification_before_travel - dt.datetime.fromisoformat('1970-01-01')))
+        if old_notification_time != new_notification_time:
+            last_check_time = get_last_check_notification_time()
+            if old_notification_time <= (last_check_time + right_border):
+                cancel_notification(trip)
+            check_need_to_create_task_immediately(new_trip)
         await message.answer('Trip changed successfully')
-        await message.answer(TripRead.model_validate(new_trip).get_info())
+        await message.answer(new_trip.get_info())
+        return new_trip
     else:
         await message.answer("It is impossible to change trip")
     await to_menu_bar(message, state)
@@ -227,6 +234,7 @@ async def command_change_travel_date(message: Message, session: AsyncSession, st
         trip.travel_date = datetime
         await save_change_trip(trip, message, session, state)
 
+
 @router.message(ChangeTrip.notification_before_travel)
 async def command_change_notification_before_travel(message: Message, session: AsyncSession, state: FSMContext):
     datetime = await check_validation_string(message.text, message)
@@ -235,6 +243,7 @@ async def command_change_notification_before_travel(message: Message, session: A
         trip = state_data['trip']
         trip.notification_before_travel = datetime
         await save_change_trip(trip, message, session, state)
+
 
 
 @router.message(ChangeTrip.transport_type)
