@@ -3,6 +3,7 @@ import requests
 import redis
 import datetime as dt
 
+
 from app.schemas.trip import TripRead
 from app.curd.trip import get_all_trips
 from app.core.db import AsyncSessionLocal
@@ -31,7 +32,8 @@ def check_notification_to_send():
 
 
 @shared_task()
-def send_notification_trip(trip: TripRead):
+def send_notification_trip(trip):
+    trip: TripRead = TripRead.model_validate_json(trip)
     url = f'https://api.telegram.org/bot{settings.telegram_bot_token}/sendMessage'
     params = {
         'chat_id': trip.chat_id,

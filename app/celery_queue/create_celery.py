@@ -6,23 +6,23 @@ from celery.signals import after_setup_logger, beat_init
 
 from app.core.config import settings
 
-from celery_app.tasks import check_notification_to_send
+from app.celery_queue.tasks import check_notification_to_send
 
 logger = logging.getLogger(__name__)
 
-tasks_celery = Celery('tasks', broker=settings.redis_url)
+celery_app = Celery('tasks', broker=settings.redis_url)
 
-tasks_celery.conf.update(
+celery_app.conf.update(
     task_serializer='json',
     accept_content=['json'],
 )
 
-tasks_celery.autodiscover_tasks()
+celery_app.autodiscover_tasks()
 
 @after_setup_logger.connect
 def setup_loggers(logger, *args, **kwargs):
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    fh = logging.FileHandler('celery_logs.log')
+    fh = logging.FileHandler('logs/celery_logs.log')
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
@@ -30,9 +30,9 @@ def setup_loggers(logger, *args, **kwargs):
 
 interval_check = dt.timedelta(minutes=30)
 
-tasks_celery.conf.beat_schedule = {
+celery_app.conf.beat_schedule = {
     "periodic_check_notification": {
-        'task': 'celery_app.tasks.check_notification_to_send',
+        'task': 'celery_queue.tasks.check_notification_to_send',
         'schedule': interval_check
     }
 }
@@ -44,4 +44,4 @@ def setup_periodic_task(sender, **kwargs):
 
 
 if __name__ == '__main__':
-    tasks_celery.start()
+    celery_app.start()
