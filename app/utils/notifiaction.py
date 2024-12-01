@@ -7,7 +7,6 @@ from app.schemas.trip import TripRead
 
 def cancel_notification(trip: TripRead):
     i = celery_app.control.inspect()
-    tasks = i.scheduled()
     cansel = False
     for worker_tasks in i.scheduled.values():
         if cansel:
