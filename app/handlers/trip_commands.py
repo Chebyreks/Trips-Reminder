@@ -18,7 +18,7 @@ from app.utils.navigation_states import to_menu_bar, to_modify_trip, to_delete_t
 from app.utils.validation import check_validation_string, check_validation_travel_datetime, \
     check_validation_notification_time, check_validation_transport_type, check_validation_number_of_trip
 
-from app.celery_queue.tasks import get_last_check_notification_time, right_border
+from celery_queue.tasks import get_last_check_notification_time, right_border
 
 router = Router(name="trip_commands_router")
 

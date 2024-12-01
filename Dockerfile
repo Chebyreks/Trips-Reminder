@@ -1,11 +1,18 @@
-FROM python3.12.3
+FROM python:3.12.3
 
-RUN curl -sSL https://install.python-poetry.org | python3 -
+RUN apt-get update && apt-get install -y curl
 
-WORKDIR /app
+RUN curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.8.3 POETRY_HOME=/root/poetry python3 -
+ENV PATH="${PATH}:/root/poetry/bin"
 
-COPY pyproject.toml poetry.lock /app/
+WORKDIR /trips-reminder
 
-RUN poetry install
 
-COPY ./app .
+COPY poetry.lock pyproject.toml /
+RUN poetry config virtualenvs.create false && \
+    poetry install
+
+
+COPY app ./app
+COPY celery_queue ./celery_queue
+

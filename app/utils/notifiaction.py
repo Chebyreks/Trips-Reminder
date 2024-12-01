@@ -1,8 +1,8 @@
 import datetime as dt
-from app.celery_queue.tasks import get_last_check_notification_time, left_border, send_notification_trip
-from app.celery_queue.create_celery import interval_check
-from app.celery_queue.create_celery import celery_app
-from app.schemas.trip import TripBase, TripRead
+from celery_queue.tasks import get_last_check_notification_time, left_border, send_notification_trip
+from celery_queue.create_celery import interval_check
+from celery_queue.create_celery import celery_app
+from app.schemas.trip import TripRead
 
 
 def cancel_notification(trip: TripRead):

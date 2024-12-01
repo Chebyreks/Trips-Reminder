@@ -6,7 +6,7 @@ from celery.signals import after_setup_logger, beat_init
 
 from app.core.config import settings
 
-from app.celery_queue.tasks import check_notification_to_send
+from celery_queue.tasks import check_notification_to_send
 
 logger = logging.getLogger(__name__)
 
