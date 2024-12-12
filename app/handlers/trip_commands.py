@@ -10,7 +10,6 @@ from app.keyboards.reply import rmk, selection_notification_time
 
 from app.curd.trip import update_trip_by_id, delete_trip_by_id
 from app.schemas.trip import TransportEnum, TripRead
-from app.schemas.route import Route
 from app.utils.get_timezone import get_timezone, timezone_adaptation
 from app.utils.notifiaction import check_need_to_create_task_immediately, cancel_notification
 from app.utils.additional_trip_info import get_route_info
@@ -185,7 +184,7 @@ async def command_change_from_place(message: Message, session: AsyncSession, sta
 
 
 @router.message(ChangeTrip.to_place)
-async def command_change_from_place(message: Message, session: AsyncSession, state: FSMContext):
+async def command_change_to_place(message: Message, session: AsyncSession, state: FSMContext):
     location = await check_validation_location(message)
     if location:
         state_data = await state.get_data()

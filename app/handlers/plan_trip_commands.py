@@ -1,5 +1,5 @@
 from aiogram.fsm.context import FSMContext
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -8,7 +8,6 @@ from app.keyboards.builders import reply_builder
 from app.keyboards.reply import rmk, selection_notification_time
 from app.models.transport_enum import TransportEnum
 from app.schemas.trip import TripBase, TripRead
-from app.schemas.route import Route
 from app.utils.additional_trip_info import get_route_info
 from app.utils.get_timezone import get_timezone
 from app.utils.navigation_states import to_menu_bar

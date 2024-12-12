@@ -41,7 +41,7 @@ class TripBase(BaseModel):
             else:
                 info += f'route length: {self.route.distance} meters'
         else:
-            info += f'no info on route'
+            info += 'no info on route'
         return info
 
 
