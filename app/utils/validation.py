@@ -9,13 +9,9 @@ from app.utils.get_timezone import timezone_adaptation
 
 async def check_validation_string(string: str, message: Message) -> bool:
     correct_date = True
-    if any(not word.isalpha() for word in string.split()):
+    if not (len(string) <= 128):
         correct_date = False
-        await message.answer("The string must contain only Cyrillic and Latin characters")
-
-    if not (3 <= len(string) <= 128):
-        correct_date = False
-        await message.answer("The length of the string must be 3 to 128 characters")
+        await message.answer("The string must have no more than 128 characters")
 
     return correct_date
 
@@ -83,11 +79,11 @@ async def check_validation_number_of_trip(len_trips: int, number: str, message: 
     return True
 
 async def check_validation_location(message: Message) -> Coordinates | None:
-    try:
+    if message.location:
         location = Coordinates(latitude=str(message.location.latitude),
                                longitude=str(message.location.longitude))
         return location
-    except AttributeError:
+    else:
         await message.answer('Send the location')
         return
 
