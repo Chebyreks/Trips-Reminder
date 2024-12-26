@@ -84,12 +84,13 @@ async def command_take_notification_before_travel(message: Message, state: FSMCo
 @router.message(PlanTrip.transport_type)
 async def command_take_transport_type(message: Message, session: AsyncSession, state: FSMContext):
     if await check_validation_transport_type(message.text, message):
+        additional_text = ''
         await state.update_data(transport_type=TransportEnum(getattr(TransportEnum, message.text)))
         trip_data = await state.get_data()
         route, bad_status = await get_route_info(trip_data['from_place'], trip_data['to_place'], trip_data['transport_type'])
         if bad_status:
-            await message.answer("It is impossible to get route")
-            await message.answer("Try changing location later")
+            additional_text = ('It is impossible to get route' + '\n'
+                       + 'Try changing location later')
         created_trip = await create_trip(
             new_trip=TripBase(
                 chat_id =message.from_user.id,
@@ -101,10 +102,11 @@ async def command_take_transport_type(message: Message, session: AsyncSession, s
             session=session
         )
         if created_trip is None:
-            await message.answer("It is impossible to create trip")
+            await message.answer(additional_text + "It is impossible to create trip")
         else:
             created_trip = TripRead.model_validate(created_trip)
             await check_need_to_create_task_immediately(created_trip)
-            await message.answer(created_trip.get_info())
-            await message.answer("The trip was saved")
+            await message.answer(additional_text + '\n' +
+                                 created_trip.get_info() + '\n' +
+                                 "The trip was saved")
         await to_menu_bar(message, state)
