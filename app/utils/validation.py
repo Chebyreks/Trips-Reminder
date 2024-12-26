@@ -9,13 +9,16 @@ from app.utils.get_timezone import timezone_adaptation
 
 async def check_validation_string(string: str, message: Message) -> bool:
     correct_date = True
-    if not (len(string) <= 128):
+    if string is None or not (len(string) <= 128):
         correct_date = False
         await message.answer("The string must have no more than 128 characters")
 
     return correct_date
 
 async def check_validation_travel_datetime(date_time: str, timezone: DstTzInfo, message: Message) -> dt.datetime | None:
+    if date_time is None:
+        await message.answer("Incorrect format")
+        return
     try:
         date, time = date_time.split()
         datetime = dt.datetime.fromisoformat(date + 'T' + time)

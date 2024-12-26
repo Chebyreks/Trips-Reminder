@@ -34,7 +34,7 @@ async def get_route_info(source: Coordinates, target: Coordinates, transport: Tr
                 for i in range(count_try):
                     async with session.post(url=url, json=body) as response:
                         status = response.status
-                        resp = await response.json()
+                        resp = await response.json(content_type=None)
                     if status == 200:
                         result = resp['result'][0]
                         duration = result['duration']
@@ -66,7 +66,7 @@ async def get_route_info(source: Coordinates, target: Coordinates, transport: Tr
                 for i in range(count_try):
                     async with session.post(url=url, json=body) as response:
                         status = response.status
-                        resp = await response.json()
+                        resp = await response.json(content_type=None)
                     if status == 200:
                         result = dict(resp[0])
                         duration = result['total_duration']
@@ -97,7 +97,7 @@ async def get_route_info(source: Coordinates, target: Coordinates, transport: Tr
                 for i in range(count_try):
                     async with session.post(url=url, json=body) as response:
                         status = response.status
-                        resp = await response.json()
+                        resp = await response.json(content_type=None)
                     if status == 200:
                         result = dict(resp[0])
                         duration = result['total_duration']
